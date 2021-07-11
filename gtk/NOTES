@@ -1,0 +1,14 @@
+
+TODO:
+  - add "wires" that redraw when they are in an exposed area,
+    reshape when the endpoints they are attached to gets moved,
+    get deleted when an endpoint gets deleted
+
+  - allow selection of modules, knobs and wires, keeping
+    corresponding knobs and widgets in the same state (ie.
+    knob representation and knob module)
+
+  - knob and modbox widgets should compute heights based on
+    font height.  font should be selected in rc file
+  - widgets should use gtk styles and rc files
+

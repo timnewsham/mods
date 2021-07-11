@@ -1,0 +1,34 @@
+
+# implied: D key key
+# implied: D audio audio
+D gen gen
+D freq freq
+D amp const 32000
+D square const 3
+
+D lfofunc knob LFOfunction 0 2
+D lfofreq knob LFOfrequency 0 1000
+D duty lfo
+D on const 1
+D lfoamp const 49
+D 50 const 50
+
+# keyboard generates a freq
+W key:note freq:note
+
+# lfo that alters duty
+W lfofreq:val duty:freq
+W lfofunc:val duty:func
+W key:gate duty:gate
+W 50:out duty:off
+W lfoamp:out duty:amp
+
+# generate a waveform
+W duty:out gen:duty
+W square:out gen:func
+W freq:freq gen:freq
+W amp:out gen:amp
+W key:gate gen:gate
+W gen:out audio:left
+W gen:out audio:right
+

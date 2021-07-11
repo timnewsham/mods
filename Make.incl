@@ -1,0 +1,11 @@
+
+# core architecture and arch independant modules
+SRCS+= misc.cpp func.cpp conf.cpp wire.cpp list.cpp mod.cpp gui.cpp \
+       attr.cpp main.cpp
+MODS+= gen.cpp freq.cpp const.cpp sum.cpp lfo.cpp mult.cpp \
+       split.cpp delay.cpp mix.cpp modulate.cpp env.cpp cap.cpp \
+       filt.cpp samp.cpp example.cpp abs.cpp switch.cpp vocode.cpp
+CPPFLAGS+= -I. -Imodules
+LIBS+= -lm
+VPATH+= modules
+

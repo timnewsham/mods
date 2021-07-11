@@ -1,0 +1,25 @@
+#!/bin/sh
+#
+# Convert audio files to mono .sw (16-bit signed samples) format
+# using SOX.
+
+# XXX we should allow rates to be specified
+RATE=22050
+
+for f in $* ; do
+    fbase=`basename $f`
+    f2=`echo $fbase | sed 's/\.[^.]*$/.sw/g'`
+    if [ "x$fbase" = "x$f2" ] ; then
+        echo "$f has no suffix... skipping"
+        continue
+    fi
+
+    if [ -e "$f2" ] ; then
+        echo "$f2 already exists... skipping"
+        continue
+    fi
+
+    echo "$f -> ./$f2"
+    sox "$f" -r $RATE "$f2"
+done
+

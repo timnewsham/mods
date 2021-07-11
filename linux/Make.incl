@@ -1,0 +1,6 @@
+
+# Linux specific
+MODS += audio.cpp midikey.cpp
+CPPFLAGS += -Ilinux
+VPATH += linux
+

@@ -1,0 +1,17 @@
+
+# Gtk GUI
+SRCS += dragpad.cpp mods.cpp rect.cpp \
+        gtkgui.cpp modpeer.cpp wirepeer.cpp
+MODS += gtkknob.cpp gtkkey.cpp gtkoscope.cpp
+CPPFLAGS += -DGTKGUI -Igtk -Igtk/mywidgets `gtk-config --cflags`
+LIBS += -Lgtk/mywidgets -lmywidgets `gtk-config --libs`
+VPATH += gtk
+XTRAMAKE += gtk/mywidgets/libmywidgets.a
+XTRACLEAN += gtk_clean
+
+gtk/mywidgets/libmywidgets.a :
+	cd gtk/mywidgets && make
+
+gtk_clean:
+	cd gtk/mywidgets && make clean
+

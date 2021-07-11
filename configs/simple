@@ -1,0 +1,23 @@
+
+# key and audio always exist, but we can still define them to
+# set their properties, if we like
+D key key			{y=61; x=9; }
+D audio audio 6 ""		{y=43; x=273; }
+
+D gen gen			{y=46; x=180; }
+D freq freq			{y=3; x=83; }
+D amp const 32000		{y=54; x=94; }
+D func knob waveform 0 3	{y=98; x=67; }
+D duty knob duty 1 99		{y=29; x=88; }
+
+# keyboard generates a freq
+W key:note freq:note
+
+# generate a waveform
+W duty:val gen:duty
+W func:val gen:func
+W freq:freq gen:freq
+W amp:out gen:amp
+W key:gate gen:gate
+W gen:out audio:left
+W gen:out audio:right

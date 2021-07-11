@@ -1,0 +1,38 @@
+
+# implied: D key key
+# implied: D audio audio
+D sin gen
+D sin2 lfo
+D sin3 gen
+D freq freq
+D sum sum 0
+D diff sum 1
+D amp const 32000
+D depth knob Depth 0 100
+D speed knob Speed 0 6000
+
+W speed:val sin2:freq
+W depth:val sin2:amp
+W key:gate sin2:gate
+
+# keyboard generates a freq
+W key:note freq:note
+
+# sum sin2 with the freq
+W sin2:out sum:a
+W freq:freq sum:b
+
+# gen a sin at summed freq
+W sum:out sin:freq
+W amp:out sin:amp
+W key:gate sin:gate
+W sin:out audio:left
+
+# gen a sin at diffed freq
+W sin2:out diff:a
+W freq:freq diff:b
+W diff:out sin3:freq
+W amp:out sin3:amp
+W key:gate sin3:gate
+W sin:out audio:right
+

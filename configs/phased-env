@@ -1,0 +1,52 @@
+
+# implied: D key key
+# implied: D audio audio
+D gen gen
+D freq freq
+D amp const 32000
+D square const 3
+D env env
+D mod modulate
+D on const 1
+
+D attack knob Attack 50 500
+D decay knob Decay 5 100
+D sustain knob Sustain 0 100
+D release knob Release 5 100
+
+D lfofunc knob LFOfunction 0 2
+D lfofreq knob LFOfrequency 0 1000
+D duty lfo
+D on const 1
+D lfoamp const 49
+D 50 const 50
+
+# keyboard generates a freq
+W key:note freq:note
+
+# lfo that alters duty
+W lfofreq:val duty:freq
+W lfofunc:val duty:func
+W key:gate duty:gate
+W 50:out duty:off
+W lfoamp:out duty:amp
+
+# generate a waveform
+W duty:out gen:duty
+W square:out gen:func
+W freq:freq gen:freq
+W amp:out gen:amp
+W on:out gen:gate
+
+# gen envelope and modulate signal with it
+W attack:val env:attack
+W decay:val env:decay
+W sustain:val env:sustain
+W release:val env:release
+W key:gate env:gate
+
+W env:out mod:a
+W gen:out mod:b
+W mod:out audio:left
+W mod:out audio:right
+

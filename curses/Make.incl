@@ -1,0 +1,8 @@
+
+# Curses GUI
+SRCS += cursgui.cpp
+MODS += curskey.cpp cursknob.cpp
+CPPFLAGS+= -DCURSGUI -Icurses
+LIBS += -lcurses
+VPATH += curses
+

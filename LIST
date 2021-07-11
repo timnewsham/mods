@@ -1,0 +1,285 @@
+
+FASTTICK = 44100 Hz  
+    The fast tick operation runs as often as it can, but since the
+    audio driver will only consume 44100 samples per second,  the fast
+    tick will end up being driven at this speed (or slower, if the CPU
+    cant keep up).
+
+SLOWTICK = (FASTTICK / 128) = ~344.5  Hz
+    This is how often the slowtick operations are called.  Slowtick
+    operations are usually used for control signals like volume, delay
+    time of the delay module and attack time of the envelope generator.
+
+Some modules perform only slowtick operations and some modules perform
+fast tick operations (which may rely on slowtick to update some of its
+parameters).  As a rule of thumb, all control operations are done at
+slowtick and all audio sample generating operations are done at fast
+tick.  Because of this, there may be some modules which appear to do
+the same operations, for example the generator and the LFO, which both
+generate waveforms.  The difference being that the LFO is designed to
+generate waveforms for control purposes, and does so at SLOWTICK speeds.
+The sum and mixer and the multipier and modulator are examples of other
+modules that duplicate functionality for different tick rates.
+----
+
+KEYS:
+   Keyboard keys are displayed when the program is run.
+   Arrow up/down - select knob to adjust
+   Arrow right/left - adjust selected knob
+   F1 - save knob settings to a file
+   F2 - load knob settings from a file
+
+----
+WRITING MODULES:
+   To write a module, first the module itself is written.  This is
+fairly simple.  An example module is given in example.cpp and example.h.
+The module source inherits from the module class and has operations that
+are performed at fast and slow ticks on the input connectors to derive
+values for the output connectors.  After the module is written, it is
+incorporated into the framework by editing the modlist.h file.  In this
+file the header file for the module should be included and a line listing
+the module name, type, number of arguments and arguments to the constructor
+are listed.  Once these have been added, the module source should be added
+to the makefile and the program rebuilt.  Thats it :)
+
+----------------------
+list of modules, instantiation parameters and connectors.
+
+KEY:
+   Descr : name (param, param, ...) - param notes
+    module notes
+     I name - input notes
+     I name - input notes
+     O name - output notes
+
+
+----------------------
+Note Frequency: freq
+   I note - 0, 1200, 2400, ... = A, 200 = B, 300 = C, ...
+   O freq - 100ths of Hz
+
+Function Generator: gen
+   I freq - 100ths of Hz
+   I amp  - 0 to 32767
+   I gate - 0 to 1
+   I duty - percent
+   I func 
+      0 sin, 1 tri, 2 saw, 3 square
+   O out  - -32768 to 32767
+
+Keyboard Input: key
+   O note - 0, 1200, 2400, .. = A 
+   O gate - 0 to 1
+
+Envelope Generator: env
+   I gate
+   I attack   - in msecs
+   I decay    - in 1/10th % per slowtick (ugh, changes if slowtick changes)
+   I sustain  - in % of total signal level
+   I release  - in 1/10th % per slowtick (ugh)
+   O out      - level from 0 to SAMPMAX
+
+Low Frequency Oscillator: lfo
+   I freq - in 100th's of Hz
+   I amp  - 0 to 32767
+   I off  - 0 to 32767
+   I gate - 0 to 1
+   I duty - percent
+   I func
+      0 sin, 1 tri, 2 saw, 3 square
+   O out - -32768 to 32767
+
+Constant: const (val)
+   O out
+
+Adjustable Knob: knob (name, range low, range hi)
+   O out - range low to range hi
+
+Summer: sum (sign) - 0 sum, 1 diff
+   I A
+   I B
+   O out
+
+Mixer: mix (sign) - 0 sum, 1 diff
+ like summer, but at fast freq, and output is scaled back to range
+   I A      - -32767 to 32768
+   I B      - -32767 to 32768
+   O out    - -32767 to 32768
+
+Multiplier: mult (scale)
+  multiply the two inputs and then divide by the scale factor.
+   I A
+   I B
+   O out
+
+Modulator: modulate
+ like multiplier, but at fast freq, and output is scaled back to range
+   I A      - -32767 to 32768
+   I B      - -32767 to 32768
+   O out    - -32767 to 32768
+
+Audio output: audio
+ (note: audio output will saturate at limits if values are too large,
+  and not just map values to range by removing high order bits)
+   I left   - -32767 to 32768
+   I right  - -32767 to 32768
+
+Splitter: split (range1 hi, r2 hi, r3 hi)
+ splits a single input value out to one of several outputs depending
+ on the value.
+   I note
+   I gate
+   O out1   - (if note <= range1 hi)
+   O gate1
+   O out2   - (if range1 hi < note <= r2 hi)
+   O gate2
+   O out3   - (if r2 hi < note <= r3 hi)
+   O gate3
+   O out4   - (if r3 hi < note)
+   O gate4
+
+Delay: delay (max_delay)
+ Variable delay.  Maximum delay is given in milliseconds.  The output
+ is the full input signal mixed with a some amount of the delayed output
+ signal.  The output is clipped at the maximum sample rate if its amplitude
+ grows too large.
+# XXX the delay range may be too small with microsecond resolution.. perhaps
+# it should be set to 10s or 100s of microseconds?
+   I in
+   I delay    - in microseconds (NOTE: NOT MILLISECONDS)
+   I feedback - in percent
+   O out
+
+Sample: samp (file freq) 
+  reads samples from the file as mono 16bit signed values, originally
+  sampled at freq.  Outputs the sample at standard speed for 440hz.
+  TODO:  this should support other file formats, allow for looping or
+         one-shot play, and support other similar features.
+   I freq     - in 100ths of Hz
+   I amp      - 0 to 32767
+   I gate     - 0 to 1
+   I trig     - 0 to 1 (restarts sample on transition from 0 to 1)
+   O out
+
+Switch: switch
+  selects an input value to output
+   I a        - 
+   I b        -
+   I c        -
+   I d        -
+   I sel      - 0 - 3, select an input
+   O out      -
+
+Absolute: abs
+  take the absolute value
+   I in       -
+   O out      - absolute value of in
+   O sign     - 1 for positive, -1 for negative
+  
+oscope: oscope (name, max, skip, trigger)
+  graphs the signal presented as input.  The oscilliscope collects samples
+  every "skip" fastticks starting with the first one over "trigger" after
+  a zero crossing.  The scope will trigger itself if a trigger event does
+  not happen in a reasonable amount of time.  These samples are plotted 
+  in a graph labelled according to the name.  The graph shows 100 captured 
+  samples across.  (In other words, if skip is 1, the graph will show 1 cycle
+  of a 441Hz [= 44100 / 100] sine wave, and if skip is 2, the graph will 
+  show 2 cycles of a 441Hz sine wave and 1 cycle of a 220.5Hz sine wave).
+  XXX - the parameters should probably be adjustable by built-in knobs
+        instead of being specified when the module is created.
+   I in       - signal to graph
+
+midikey: midikey
+  Reads note-on and note-off events from midi.
+  XXX this needs to have options for midi channel and device name
+   O note     - the note number in the same format as the key module
+   O vel      - the velocity, from 0 to 127.  May be used as a gate value.
+
+Filter: filter(type)
+  2-Pole filter in 4 flavors: 0=bandpass, 1=lowpass, 2=highpass, 3=notch
+   I in       - inputs to sample
+   I fc       - center frequency in Hz
+   I reso     - resolution, typically from 0 (minimal effect) to 100 or so
+                (very sharp, although higher values are allowed).  For high 
+                and low pass filters, a value of 25 or less will have no 
+                resonance, and higher values will start to select for 
+                frequencies in the knee region.
+   O out      - filtered version of input
+
+Vocoder: vocode(poles)
+  A real-time voice modeller which fits a filter with the number of
+  poles specified to the voice input given.  This filter models the
+  formant filter of a person's throat and mouth.  The second input
+  is then passed through this filter, making it sound like it was
+  spoken.  Noise is mixed with the input signal if the primary pitch
+  of the analyzed signal is less than 25% of its total power.  This
+  models the unvoiced parts of speech such as "ess" and "th" sounds.
+  More poles means more computation, and a more realistic reproduction.
+  NOTE: This module is a number cruncher.. use sparingly.
+  XXX: should write a version of this module that reads in pre-analyzed
+       coefficients and plays them back.  Would be more efficient when
+       real-time analysis is not required.
+   I in       - the signal to be filtered
+   I voice    - the signal to be analyzed as voice
+   O out      - processed version of input signal
+
+--------------------------------------------------------------
+TODO:
+
+FM Generator: fm
+#Flanger: flange - can now be done with delay properly
+Reverb: reverb
+Distoration: distort
+Ring Modulator: ring
+Sequencer: seq
+noise generator: both low and high freq versions
+vocoder with preprocessed data
+stereo effects
+
+- revamp config file parsing to allow nesting, so that I can easily
+  handle state settings and macros within a config file.
+- macros
+  macros should be load/saveable in a seperate file as well as able to
+  be incorporated into a config file
+- add shelving and other filter types as well
+- argument processing in startup
+- seperate arch init routines
+- why does "fullsynth" sound slightly different in curses and gtk
+  guis?  Is this just an artifact of the knob resolutions?
+- dont rely on int being 32 bits (this probably isnt really a problem,
+  since 64 bits should work fine too)
+- allow configs and settings to be scrolled through with simple
+  up/down keys and a master list menu.  allow settings to be stored by
+  name inside a config file.
+
+
+- gui:
+  should be able to select regions by dragging a box around items.  Also
+     the gui needs to distinguish between clicks on a box and clicks on
+     wires and the background.
+  copy/paste/cut
+  slider/buttons as alternates to knobs
+  property editing
+  tie midi controllers to knobs
+  fix module list menu to be generated after everything else is started
+    so arch specific modules can be added at arch init time
+  there's still a bug in the layout widget (or perhaps my code?) where
+    refreshes dont always happen properly - typically after exposing
+    some new screen area (which causes the layout to adjust its bin_window)
+
+
+---
+
+freq:  value = Hz * 100 
+       (this gives greater than cent resolution for all audible frequencies)
+       useful range: up to 22050 Hz (22050 * 100)
+
+note:  if notes are numbered A440 = 0, B = 2, C = 3, ...
+       value = (note_number - 4 * 12) * 100
+       (value is the number of cents above the A 4 octaves lower than A440)
+
+samples:
+       if max peak levels are -1.0 and 1.0 ...
+       value = 32767 * level
+       useful range: -32768 to 32767 : 16bits, signed
+

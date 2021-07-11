@@ -1,0 +1,41 @@
+
+# implied: D key key
+# implied: D audio audio
+D sin gen
+D square gen
+D freq1 freq
+D freq2 freq
+D sum mix 0
+D diff sum 1
+D amp const 32000
+D split split 36 900 900
+D 3 const 3
+D 50 const 50
+D 12 const 12
+
+# split keyboard note into two paths
+W key:note split:in
+W key:gate split:gate
+
+# gen a sin from the first path
+W split:out1 freq1:note
+W split:gate1 sin:gate
+W freq1:freq sin:freq
+W amp:out sin:amp
+
+# gen a square from the second path, an octave lower than played
+W split:out2 diff:a
+W 12:out diff:b
+W diff:out freq2:note
+W split:gate2 square:gate
+W freq2:freq square:freq
+W amp:out square:amp
+W 3:out square:func
+W 50:out square:duty
+
+# sum the two paths and output
+W square:out sum:a
+W sin:out sum:b
+W sum:out audio:left
+W sum:out audio:right
+

@@ -1,0 +1,32 @@
+
+# implied: D key key
+# implied: D audio audio
+D gen gen
+D gen2 gen
+D freq freq
+D amp const 32000
+D func knob waveform 0 3
+D duty knob duty 1 99
+D oct mult 1
+D 2 const 2
+
+# keyboard generates a freq
+W key:note freq:note
+
+# generate a waveform
+W duty:val gen:duty
+W func:val gen:func
+W freq:freq gen:freq
+W amp:out gen:amp
+W key:gate gen:gate
+W gen:out audio:left
+
+W freq:freq oct:a
+W 2:out oct:b
+W oct:out gen2:freq
+W func:val gen2:func
+W amp:out gen2:amp
+W duty:val gen2:duty
+W key:gate gen2:gate
+W gen2:out audio:right
+

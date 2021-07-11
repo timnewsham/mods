@@ -1,0 +1,38 @@
+
+# implied: D key key
+# implied: D audio audio
+D gen samp samples/test.sw 22050
+D freq freq
+D env env
+D mod modulate
+D on const 1
+D amp knob amp 0 32767
+D attack knob Attack 50 500
+D decay knob Decay 5 35
+D sustain knob Sustain 0 100
+D release knob Release 5 35
+
+# keyboard generates a freq
+W key:note freq:note
+
+# gen envelope
+W attack:val env:attack
+W decay:val env:decay
+W sustain:val env:sustain
+W release:val env:release
+W key:gate env:gate
+
+# play sample
+W freq:freq gen:freq
+W amp:val gen:amp
+W on:out gen:gate
+W key:gate gen:trig
+#W on:out gen:trig
+
+# modulate sample w/ envelope
+W env:out mod:a
+W gen:out mod:b
+W mod:out audio:left
+W mod:out audio:right
+
+
